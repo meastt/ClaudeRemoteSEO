@@ -1,0 +1,8 @@
+.env
+*.env
+!.env.example
+.openclaw/cache/
+.openclaw/logs/
+heartbeat_journal/
+.DS_Store
+Thumbs.db
