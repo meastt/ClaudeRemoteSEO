@@ -1,0 +1,68 @@
+{
+  "_schema": "openclaw-auth-profiles",
+  "_version": "3.4.26",
+  "_note": "All credentials are resolved at runtime via SecretRef. No plaintext keys are stored in this file.",
+  "secret_ref_system": {
+    "resolver": "environment",
+    "fallback_resolvers": ["dotenv", "vault"],
+    "strict_mode": true
+  },
+  "profiles": {
+    "anthropic": {
+      "provider": "anthropic",
+      "auth_type": "bearer_token",
+      "credentials": { "api_key": { "$secretRef": { "source": "environment", "var": "ANTHROPIC_API_KEY" } } },
+      "base_url": "https://api.anthropic.com/v1",
+      "timeout_ms": 120000,
+      "retry": { "max_attempts": 3, "backoff_strategy": "exponential" }
+    },
+    "google_ai": {
+      "provider": "google",
+      "auth_type": "api_key",
+      "credentials": { "api_key": { "$secretRef": { "source": "environment", "var": "GOOGLE_AI_API_KEY" } } },
+      "base_url": "https://generativelanguage.googleapis.com/v1beta",
+      "timeout_ms": 60000,
+      "retry": { "max_attempts": 3, "backoff_strategy": "exponential" }
+    },
+    "openai": {
+      "provider": "openai",
+      "auth_type": "bearer_token",
+      "credentials": { "api_key": { "$secretRef": { "source": "environment", "var": "OPENAI_API_KEY" } } },
+      "base_url": "https://api.openai.com/v1",
+      "timeout_ms": 120000,
+      "retry": { "max_attempts": 3, "backoff_strategy": "exponential" }
+    },
+    "openrouter": {
+      "provider": "openrouter",
+      "auth_type": "bearer_token",
+      "credentials": { "api_key": { "$secretRef": { "source": "environment", "var": "OPENROUTER_API_KEY" } } },
+      "base_url": "https://openrouter.ai/api/v1",
+      "timeout_ms": 120000,
+      "retry": { "max_attempts": 5, "backoff_strategy": "exponential" }
+    },
+    "wordpress": {
+      "provider": "wordpress_rest",
+      "auth_type": "application_password",
+      "credentials": { "app_password": { "$secretRef": { "source": "environment", "var": "WP_APP_PASSWORD" } } },
+      "base_url": "https://tigertribe.net/wp-json/wp/v2",
+      "timeout_ms": 30000,
+      "retry": { "max_attempts": 2, "backoff_strategy": "linear" }
+    },
+    "google_search_console": {
+      "provider": "google_search_console",
+      "auth_type": "service_account_json",
+      "credentials": { "service_account_json": { "$secretRef": { "source": "environment", "var": "GSC_SERVICE_ACCOUNT_JSON", "encoding": "json_string" } } },
+      "scopes": ["https://www.googleapis.com/auth/webmasters.readonly"],
+      "site_url": "https://tigertribe.net/",
+      "timeout_ms": 30000,
+      "retry": { "max_attempts": 3, "backoff_strategy": "exponential" }
+    },
+    "slack": {
+      "provider": "slack",
+      "auth_type": "webhook",
+      "credentials": { "webhook_url": { "$secretRef": { "source": "environment", "var": "SLACK_WEBHOOK_URL" } } },
+      "timeout_ms": 10000,
+      "retry": { "max_attempts": 2, "backoff_strategy": "linear" }
+    }
+  }
+}

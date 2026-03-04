@@ -1,0 +1,46 @@
+{
+  "_schema": "openclaw-config",
+  "_version": "3.4.26",
+  "workspace": {
+    "name": "tigertribe-seo-agency",
+    "site": "https://tigertribe.net/",
+    "niche": "scientific zoological research — predatory felids",
+    "auth_profiles_file": "./auth-profiles.json"
+  },
+  "tiered_intelligence_routing": {
+    "roles": {
+      "Analyst":     { "model_id": "claude-3-5-sonnet-20241022", "provider_profile": "anthropic",  "tier": "heavy", "default_params": { "max_tokens": 8192, "temperature": 0.3 } },
+      "Writer":      { "model_id": "claude-3-5-sonnet-20241022", "provider_profile": "anthropic",  "tier": "heavy", "default_params": { "max_tokens": 8192, "temperature": 0.4 } },
+      "Technician":  { "model_id": "gemini-1.5-flash",           "provider_profile": "google_ai",  "tier": "light", "default_params": { "max_tokens": 2048, "temperature": 0.1 } },
+      "ArtDirector": { "model_id": "dall-e-3",                   "provider_profile": "openai",     "tier": "image", "default_params": { "style": "natural", "size": "1792x1024", "quality": "hd", "response_format": "url", "n": 1 } }
+    },
+    "failover_chain": {
+      "trigger_codes": [429, 500, 502, 503, 504],
+      "strategy": "sequential",
+      "chain": [
+        { "step": 1, "label": "Primary", "resolve": "role_default" },
+        { "step": 2, "label": "OpenRouter Failover", "provider_profile": "openrouter", "model_map": { "Analyst": "anthropic/claude-3.5-sonnet", "Writer": "anthropic/claude-3.5-sonnet", "Technician": "google/gemini-flash-1.5" } }
+      ],
+      "max_failover_attempts": 2,
+      "alert_on_failover": true,
+      "alert_channel": "slack"
+    }
+  },
+  "channel_adapters": {
+    "slack": {
+      "provider_profile": "slack",
+      "enabled": true,
+      "events": {
+        "eod_briefing":     { "schedule": "cron(0 23 * * *)",           "template": "eod_briefing_v1" },
+        "failover_alert":   { "trigger": "on_failover_activation",      "template": "failover_alert_v1" },
+        "maturation_block": { "trigger": "on_21day_rule_enforcement",   "template": "maturation_block_v1" }
+      }
+    },
+    "wordpress_rest": { "provider_profile": "wordpress", "enabled": true, "permitted_actions": ["GET", "POST", "PUT"] }
+  },
+  "memory": {
+    "backend": "mmr",
+    "index": "tigertribe-content-index",
+    "fields_indexed": ["post_id", "slug", "title", "last_updated_at", "primary_keyword", "secondary_keywords"]
+  }
+}
