@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TigerSEO Command Dashboard</title>
+  <meta name="description" content="Real-time monitoring dashboard for TigerTribe.net OpenClaw SEO agent system">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="dashboard-data.js"></script>
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       DESIGN SYSTEM
+    ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #111118;
+      --bg-card: rgba(20, 20, 30, 0.7);
+      --bg-card-hover: rgba(30, 30, 45, 0.8);
+      --border-card: rgba(255, 165, 0, 0.12);
+      --border-glow: rgba(255, 165, 0, 0.25);
+
+      --text-primary: #f0ece4;
+      --text-secondary: #9a958c;
+      --text-muted: #5c584f;
+
+      --accent-amber: #f5a623;
+      --accent-orange: #e8721a;
+      --accent-green: #34d399;
+      --accent-red: #f45b5b;
+      --accent-blue: #60a5fa;
+      --accent-purple: #a78bfa;
+
+      --gradient-hero: linear-gradient(135deg, #f5a623 0%, #e8721a 50%, #d4380d 100%);
+      --gradient-card: linear-gradient(145deg, rgba(255, 165, 0, 0.06) 0%, rgba(255, 165, 0, 0) 60%);
+
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+
+      --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4), 0 1px 4px rgba(0, 0, 0, 0.3);
+      --shadow-glow: 0 0 30px rgba(245, 166, 35, 0.08);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Subtle animated bg */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(245, 166, 35, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(232, 114, 26, 0.03) 0%, transparent 50%);
+      z-index: -1;
+      animation: bgPulse 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes bgPulse {
+      0% {
+        opacity: 0.6;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════════════════════════════ */
+    .header {
+      padding: 28px 32px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 165, 0, 0.08);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      background: var(--gradient-hero);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 20px rgba(245, 166, 35, 0.25);
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .header-title span {
+      background: var(--gradient-hero);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(52, 211, 153, 0.1);
+      color: var(--accent-green);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 6px rgba(52, 211, 153, 0);
+      }
+    }
+
+    .timestamp {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       KPI STRIP
+    ═══════════════════════════════════════════════════════════════ */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      padding: 24px 32px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      backdrop-filter: blur(16px);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--gradient-hero);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .kpi-card:hover::before {
+      opacity: 1;
+    }
+
+    .kpi-card:hover {
+      border-color: var(--border-glow);
+      box-shadow: var(--shadow-glow);
+      transform: translateY(-2px);
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kpi-change {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 6px;
+      padding: 2px 8px;
+      border-radius: 100px;
+    }
+
+    .kpi-change.up {
+      color: var(--accent-green);
+      background: rgba(52, 211, 153, 0.1);
+    }
+
+    .kpi-change.down {
+      color: var(--accent-red);
+      background: rgba(244, 91, 91, 0.1);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       GRID LAYOUT
+    ═══════════════════════════════════════════════════════════════ */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+      padding: 8px 32px 40px;
+    }
+
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow-card);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-card);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .panel:hover::after {
+      opacity: 1;
+    }
+
+    .panel:hover {
+      border-color: var(--border-glow);
+      box-shadow: var(--shadow-card), var(--shadow-glow);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .panel-icon {
+      font-size: 18px;
+    }
+
+    .panel-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 100px;
+      background: rgba(245, 166, 35, 0.12);
+      color: var(--accent-amber);
+      border: 1px solid rgba(245, 166, 35, 0.15);
+    }
+
+    /* Span classes */
+    .col-4 {
+      grid-column: span 4;
+    }
+
+    .col-5 {
+      grid-column: span 5;
+    }
+
+    .col-6 {
+      grid-column: span 6;
+    }
+
+    .col-7 {
+      grid-column: span 7;
+    }
+
+    .col-8 {
+      grid-column: span 8;
+    }
+
+    .col-12 {
+      grid-column: span 12;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       TOKEN BURN PANEL
+    ═══════════════════════════════════════════════════════════════ */
+    .burn-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      position: relative;
+      z-index: 1;
+    }
+
+    .burn-row:last-child {
+      border-bottom: none;
+    }
+
+    .burn-agent {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .agent-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .agent-dot.analyst {
+      background: var(--accent-blue);
+    }
+
+    .agent-dot.writer {
+      background: var(--accent-purple);
+    }
+
+    .agent-dot.technician {
+      background: var(--accent-green);
+    }
+
+    .agent-dot.art {
+      background: var(--accent-orange);
+    }
+
+    .burn-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .burn-model {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .burn-stats {
+      text-align: right;
+    }
+
+    .burn-tokens {
+      font-size: 14px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .burn-cost {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .burn-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 100px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .burn-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 1s ease;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       CHART CONTAINER
+    ═══════════════════════════════════════════════════════════════ */
+    .chart-container {
+      position: relative;
+      z-index: 1;
+      height: 220px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       ACTIVITY FEED
+    ═══════════════════════════════════════════════════════════════ */
+    .feed {
+      max-height: 360px;
+      overflow-y: auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .feed::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .feed::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .feed::-webkit-scrollbar-thumb {
+      background: rgba(255, 165, 0, 0.2);
+      border-radius: 100px;
+    }
+
+    .feed-item {
+      display: flex;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      animation: feedSlide 0.4s ease;
+    }
+
+    @keyframes feedSlide {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .feed-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .feed-icon.publish {
+      background: rgba(52, 211, 153, 0.12);
+    }
+
+    .feed-icon.heartbeat {
+      background: rgba(96, 165, 250, 0.12);
+    }
+
+    .feed-icon.error {
+      background: rgba(244, 91, 91, 0.12);
+    }
+
+    .feed-icon.analysis {
+      background: rgba(167, 139, 250, 0.12);
+    }
+
+    .feed-icon.blocked {
+      background: rgba(245, 166, 35, 0.12);
+    }
+
+    .feed-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .feed-text {
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .feed-text .highlight {
+      color: var(--accent-amber);
+      font-weight: 600;
+    }
+
+    .feed-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-top: 3px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       WORDPRESS TABLE
+    ═══════════════════════════════════════════════════════════════ */
+    .wp-table {
+      width: 100%;
+      border-collapse: collapse;
+      position: relative;
+      z-index: 1;
+    }
+
+    .wp-table th {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .wp-table td {
+      font-size: 13px;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      vertical-align: middle;
+    }
+
+    .wp-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .slug-link {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent-blue);
+      text-decoration: none;
+    }
+
+    .slug-link:hover {
+      text-decoration: underline;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .status-pill.created {
+      background: rgba(52, 211, 153, 0.12);
+      color: var(--accent-green);
+    }
+
+    .status-pill.updated {
+      background: rgba(96, 165, 250, 0.12);
+      color: var(--accent-blue);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SITE HEALTH PANEL
+    ═══════════════════════════════════════════════════════════════ */
+    .health-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .health-metric {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .health-metric-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .health-metric-value {
+      font-size: 20px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .health-metric-value.good {
+      color: var(--accent-green);
+    }
+
+    .health-metric-value.warn {
+      color: var(--accent-amber);
+    }
+
+    .health-metric-value.bad {
+      color: var(--accent-red);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       COST PROJECTIONS
+    ═══════════════════════════════════════════════════════════════ */
+    .cost-summary {
+      position: relative;
+      z-index: 1;
+    }
+
+    .cost-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .cost-row:last-child {
+      border-bottom: none;
+    }
+
+    .cost-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .cost-value {
+      font-size: 16px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cost-value.total {
+      font-size: 22px;
+      color: var(--accent-amber);
+    }
+
+    .budget-bar-container {
+      margin-top: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .budget-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .budget-bar {
+      width: 100%;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .budget-bar-fill {
+      height: 100%;
+      background: var(--gradient-hero);
+      border-radius: 100px;
+      transition: width 1.5s ease;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════════════════════ */
+    @media (max-width: 1200px) {
+
+      .col-4,
+      .col-5,
+      .col-6,
+      .col-7,
+      .col-8 {
+        grid-column: span 6;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .kpi-strip {
+        padding: 16px 20px;
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .dashboard-grid {
+        padding: 8px 20px 32px;
+      }
+
+      .col-4,
+      .col-5,
+      .col-6,
+      .col-7,
+      .col-8,
+      .col-12 {
+        grid-column: span 12;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ════════════════════════ HEADER ════════════════════════ -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">🐯</div>
+      <div>
+        <div class="header-title"><span>TigerSEO</span> Command Dashboard</div>
+        <div class="header-sub">tigertribe.net · OpenClaw v3.4.26</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-badge">
+        <div class="status-dot"></div>
+        All Systems Nominal
+      </div>
+      <div class="timestamp" id="headerTimestamp"></div>
+    </div>
+  </header>
+
+  <!-- ════════════════════════ KPI STRIP ════════════════════════ -->
+  <div class="kpi-strip" id="kpiStrip"></div>
+
+  <!-- ════════════════════════ DASHBOARD GRID ════════════════════════ -->
+  <div class="dashboard-grid">
+
+    <!-- TOKEN BURN -->
+    <div class="panel col-5" id="tokenBurnPanel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="panel-icon">🔥</span> Token Burn
+        </div>
+        <span class="panel-badge">24h</span>
+      </div>
+      <div id="tokenBurnContent"></div>
+    </div>
+
+    <!-- GSC TRENDS -->
+    <div class="panel col-7" id="gscPanel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="panel-icon">📊</span> GSC Performance
+        </div>
+        <span class="panel-badge">30 days</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="gscChart"></canvas>
+      </div>
+    </div>
+
+    <!-- AGENT ACTIVITY -->
+    <div class="panel col-5">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="panel-icon">🤖</span> Agent Activity
+        </div>
+        <span class="panel-badge">Live Feed</span>
+      </div>
+      <div class="feed" id="activityFeed"></div>
+    </div>
+
+    <!-- WORDPRESS PUBLISHING -->
+    <div class="panel col-7">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="panel-icon">📝</span> WordPress Publishing
+        </div>
+        <span class="panel-badge" id="wpCountBadge"></span>
+      </div>
+      <table class="wp-table" id="wpTable">
+        <thead>
+          <tr>
+            <th>Slug</th>
+            <th>Action</th>
+            <th>Agent</th>
+            <th>When</th>
+            <th>Tokens</th>
+          </tr>
+        </thead>
+        <tbody id="wpTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- SITE HEALTH -->
+    <div class="panel col-4">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="panel-icon">🏥</span> Site Health
+        </div>
+        <span class="panel-badge" id="healthBadge">Healthy</span>
+      </div>
+      <div class="health-grid" id="healthGrid"></div>
+    </div>
+
+    <!-- COST PROJECTIONS -->
+    <div class="panel col-4">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="panel-icon">💰</span> Cost Projections
+        </div>
+        <span class="panel-badge">Monthly</span>
+      </div>
+      <div class="cost-summary" id="costSummary"></div>
+      <div class="budget-bar-container" id="budgetBar"></div>
+    </div>
+
+    <!-- TOP MOVERS -->
+    <div class="panel col-4">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="panel-icon">📈</span> Rank Movers
+        </div>
+        <span class="panel-badge">7 days</span>
+      </div>
+      <div id="moversContent"></div>
+    </div>
+
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // MOCK DATA OR LIVE DATA
+    // ═══════════════════════════════════════════════════════════════
+    const MOCK = window.dashboardData || {
+      kpis: [
+        { label: 'Tokens Today', value: '48.2K', change: '+12%', direction: 'up' },
+        { label: 'Monthly Spend', value: '$4.83', change: '-8%', direction: 'down' },
+        { label: 'Posts Published', value: '3', change: '+2', direction: 'up' },
+        { label: 'Impressions (7d)', value: '87', change: '-14%', direction: 'down' },
+        { label: 'Avg Position', value: '55.7', change: '+3.1', direction: 'down' },
+      ],
+
+      tokenBurn: [
+        {
+          agent: 'Analyst', model: 'claude-sonnet-4', dotClass: 'analyst',
+          inputTokens: 12400, outputTokens: 3200, cost: 0.78,
+          barColor: 'var(--accent-blue)', barPercent: 65
+        },
+        {
+          agent: 'Writer', model: 'claude-sonnet-4', dotClass: 'writer',
+          inputTokens: 18600, outputTokens: 8100, cost: 2.14,
+          barColor: 'var(--accent-purple)', barPercent: 88
+        },
+        {
+          agent: 'Technician', model: 'gemini-1.5-flash', dotClass: 'technician',
+          inputTokens: 4800, outputTokens: 1100, cost: 0.02,
+          barColor: 'var(--accent-green)', barPercent: 24
+        },
+        {
+          agent: 'Art Director', model: 'gemini-3.1-flash-image', dotClass: 'art',
+          inputTokens: 0, outputTokens: 0, cost: 0.12, images: 3,
+          barColor: 'var(--accent-orange)', barPercent: 15
+        },
+      ],
+
+      gsc: {
+        labels: Array.from({ length: 30 }, (_, i) => {
+          const d = new Date(); d.setDate(d.getDate() - 29 + i);
+          return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }),
+        impressions: [
+          91, 86, 72, 78, 69, 82, 88, 75, 84, 79,
+          92, 85, 71, 68, 73, 80, 87, 93, 76, 81,
+          70, 77, 83, 89, 74, 66, 90, 95, 82, 87
+        ],
+        clicks: [
+          1, 0, 0, 1, 0, 0, 1, 0, 1, 0,
+          0, 1, 0, 0, 0, 1, 0, 0, 0, 1,
+          0, 0, 1, 0, 0, 0, 1, 0, 0, 0
+        ],
+        avgPosition: [
+          68, 65, 70, 72, 67, 63, 60, 58, 62, 64,
+          59, 57, 61, 63, 56, 54, 58, 55, 53, 52,
+          57, 60, 56, 54, 51, 58, 55, 53, 56, 55
+        ],
+      },
+
+      movers: [
+        { query: 'bobcat', direction: 'up', delta: 2.3, position: 15.5 },
+        { query: 'white lions', direction: 'up', delta: 1.8, position: 16.1 },
+        { query: 'caspian tiger', direction: 'up', delta: 0.9, position: 15.9 },
+        { query: 'gorilla vs lion', direction: 'down', delta: -4.2, position: 77.9 },
+        { query: 'tiger chuffing', direction: 'down', delta: -6.1, position: 96.9 },
+        { query: 'do lions attack humans', direction: 'down', delta: -3.4, position: 95.2 },
+      ],
+
+      activity: [
+        { type: 'publish', icon: '✅', text: 'Published <span class="highlight">amur-tiger-habitat-guide</span>', time: '14 min ago', agent: 'Writer' },
+        { type: 'heartbeat', icon: '💓', text: 'HB-60-PING — site healthy, TTFB 842ms', time: '22 min ago', agent: 'Technician' },
+        { type: 'analysis', icon: '🔬', text: 'Daily analysis: 4 KeywordBriefs dispatched to Writer', time: '1h ago', agent: 'Analyst' },
+        { type: 'publish', icon: '✅', text: 'Updated <span class="highlight">bobcats</span> — refreshed 2026 data', time: '2h ago', agent: 'Writer' },
+        { type: 'blocked', icon: '🛑', text: '21-Day Rule blocked edit: <span class="highlight">white-lions-guide</span> (12d remaining)', time: '2h ago', agent: 'Analyst' },
+        { type: 'heartbeat', icon: '💓', text: 'HB-60-PING — site healthy, TTFB 791ms', time: '3h ago', agent: 'Technician' },
+        { type: 'publish', icon: '✅', text: 'Published <span class="highlight">mountain-lion-population-update</span>', time: '4h ago', agent: 'Writer' },
+        { type: 'error', icon: '⚠️', text: 'Art Director timeout — retrying image gen for lion-mating-biology', time: '5h ago', agent: 'Art Director' },
+        { type: 'heartbeat', icon: '💓', text: 'HB-60-PING — site healthy, TTFB 903ms', time: '5h ago', agent: 'Technician' },
+        { type: 'analysis', icon: '🔬', text: 'GSC delta alert: "gorilla vs lion" dropped 4.2 positions', time: '6h ago', agent: 'Analyst' },
+        { type: 'heartbeat', icon: '💓', text: 'HB-60-PING — site healthy, TTFB 856ms', time: '7h ago', agent: 'Technician' },
+        { type: 'publish', icon: '✅', text: 'Published <span class="highlight">do-tigers-eat-fish</span>', time: '8h ago', agent: 'Writer' },
+      ],
+
+      wpPublishes: [
+        { slug: '/amur-tiger-habitat-guide/', action: 'created', agent: 'Writer', time: '14 min ago', tokens: 8420 },
+        { slug: '/bobcats/', action: 'updated', agent: 'Writer', time: '2h ago', tokens: 6180 },
+        { slug: '/mountain-lion-population-update/', action: 'created', agent: 'Writer', time: '4h ago', tokens: 7840 },
+        { slug: '/do-tigers-eat-fish/', action: 'created', agent: 'Writer', time: '8h ago', tokens: 5220 },
+        { slug: '/caspian-tigers-guide/', action: 'updated', agent: 'Writer', time: 'Yesterday', tokens: 6930 },
+      ],
+
+      health: {
+        status: 200,
+        ttfb: 842,
+        uptime: 99.94,
+        lcp: 3.1,
+        cls: 0.08,
+        inp: 180,
+      },
+
+      costs: {
+        analyst: 0.78,
+        writer: 2.14,
+        technician: 0.02,
+        artDirector: 0.12,
+        failover: 0.00,
+        monthlyBudget: 25.00,
+        monthlySpent: 4.83,
+        costPerPost: 1.21,
+        projectedMonthly: 12.40,
+      }
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // RENDER FUNCTIONS
+    // ═══════════════════════════════════════════════════════════════
+
+    function renderTimestamp() {
+      const el = document.getElementById('headerTimestamp');
+      const now = new Date();
+      el.textContent = now.toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+    }
+
+    function renderKPIs() {
+      const strip = document.getElementById('kpiStrip');
+      strip.innerHTML = MOCK.kpis.map(k => `
+    <div class="kpi-card">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-change ${k.direction === 'up' ? 'up' : 'down'}">
+        ${k.direction === 'up' ? '↑' : '↓'} ${k.change}
+      </div>
+    </div>
+  `).join('');
+    }
+
+    function renderTokenBurn() {
+      const container = document.getElementById('tokenBurnContent');
+      container.innerHTML = MOCK.tokenBurn.map(t => `
+    <div class="burn-row">
+      <div class="burn-agent">
+        <div class="agent-dot ${t.dotClass}"></div>
+        <div>
+          <div class="burn-name">${t.agent}</div>
+          <div class="burn-model">${t.model}</div>
+        </div>
+      </div>
+      <div class="burn-stats">
+        <div class="burn-tokens">${t.images ? t.images + ' images' : ((t.inputTokens + t.outputTokens) / 1000).toFixed(1) + 'K tokens'}</div>
+        <div class="burn-cost">$${t.cost.toFixed(2)}</div>
+      </div>
+    </div>
+    <div class="burn-bar">
+      <div class="burn-bar-fill" style="width: ${t.barPercent}%; background: ${t.barColor};"></div>
+    </div>
+  `).join('');
+    }
+
+    function renderGSCChart() {
+      const ctx = document.getElementById('gscChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: MOCK.gsc.labels,
+          datasets: [
+            {
+              label: 'Impressions',
+              data: MOCK.gsc.impressions,
+              borderColor: '#f5a623',
+              backgroundColor: 'rgba(245,166,35,0.08)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+              yAxisID: 'y',
+            },
+            {
+              label: 'Clicks',
+              data: MOCK.gsc.clicks,
+              borderColor: '#34d399',
+              backgroundColor: 'rgba(52,211,153,0.05)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+              yAxisID: 'y',
+            },
+            {
+              label: 'Avg Position',
+              data: MOCK.gsc.avgPosition,
+              borderColor: '#60a5fa',
+              borderWidth: 1.5,
+              borderDash: [6, 3],
+              fill: false,
+              tension: 0.4,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+              yAxisID: 'y1',
+            },
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                color: '#9a958c',
+                font: { family: 'Inter', size: 11 },
+                padding: 16,
+                usePointStyle: true,
+                boxWidth: 8,
+                boxHeight: 8,
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(17,17,24,0.95)',
+              titleColor: '#f0ece4',
+              bodyColor: '#9a958c',
+              borderColor: 'rgba(245,166,35,0.2)',
+              borderWidth: 1,
+              padding: 12,
+              cornerRadius: 8,
+              titleFont: { family: 'Inter', weight: '600' },
+              bodyFont: { family: 'JetBrains Mono', size: 12 },
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#5c584f', font: { size: 10, family: 'Inter' }, maxTicksLimit: 8 },
+              grid: { color: 'rgba(255,255,255,0.03)' },
+            },
+            y: {
+              position: 'left',
+              ticks: { color: '#5c584f', font: { size: 10, family: 'JetBrains Mono' } },
+              grid: { color: 'rgba(255,255,255,0.03)' },
+              title: { display: true, text: 'Impressions / Clicks', color: '#5c584f', font: { size: 10 } },
+            },
+            y1: {
+              position: 'right',
+              reverse: true,
+              ticks: { color: '#5c584f', font: { size: 10, family: 'JetBrains Mono' } },
+              grid: { drawOnChartArea: false },
+              title: { display: true, text: 'Avg Position', color: '#5c584f', font: { size: 10 } },
+            }
+          }
+        }
+      });
+    }
+
+    function renderActivityFeed() {
+      const feed = document.getElementById('activityFeed');
+      feed.innerHTML = MOCK.activity.map(a => `
+    <div class="feed-item">
+      <div class="feed-icon ${a.type}">${a.icon}</div>
+      <div class="feed-content">
+        <div class="feed-text">${a.text}</div>
+        <div class="feed-time">${a.agent} · ${a.time}</div>
+      </div>
+    </div>
+  `).join('');
+    }
+
+    function renderWPTable() {
+      const countBadge = document.getElementById('wpCountBadge');
+      const created = MOCK.wpPublishes.filter(p => p.action === 'created').length;
+      const updated = MOCK.wpPublishes.filter(p => p.action === 'updated').length;
+      countBadge.textContent = `${created} new · ${updated} updated`;
+
+      const tbody = document.getElementById('wpTableBody');
+      tbody.innerHTML = MOCK.wpPublishes.map(p => `
+    <tr>
+      <td><a href="https://tigertribe.net${p.slug}" target="_blank" class="slug-link">${p.slug}</a></td>
+      <td><span class="status-pill ${p.action}">${p.action}</span></td>
+      <td style="color: var(--text-secondary); font-size: 12px;">${p.agent}</td>
+      <td style="color: var(--text-muted); font-family: var(--font-mono); font-size: 12px;">${p.time}</td>
+      <td style="font-family: var(--font-mono); font-size: 12px;">${(p.tokens / 1000).toFixed(1)}K</td>
+    </tr>
+  `).join('');
+    }
+
+    function renderHealth() {
+      const grid = document.getElementById('healthGrid');
+      const h = MOCK.health;
+
+      const metrics = [
+        { label: 'HTTP Status', value: h.status, class: h.status === 200 ? 'good' : 'bad', display: h.status },
+        { label: 'Uptime', value: h.uptime, class: h.uptime > 99.9 ? 'good' : 'warn', display: h.uptime + '%' },
+        { label: 'TTFB', value: h.ttfb, class: h.ttfb < 800 ? 'good' : h.ttfb < 1200 ? 'warn' : 'bad', display: h.ttfb + 'ms' },
+        { label: 'LCP', value: h.lcp, class: h.lcp <= 2.5 ? 'good' : h.lcp <= 4 ? 'warn' : 'bad', display: h.lcp + 's' },
+        { label: 'CLS', value: h.cls, class: h.cls <= 0.1 ? 'good' : h.cls <= 0.25 ? 'warn' : 'bad', display: h.cls },
+        { label: 'INP', value: h.inp, class: h.inp <= 200 ? 'good' : h.inp <= 500 ? 'warn' : 'bad', display: h.inp + 'ms' },
+      ];
+
+      grid.innerHTML = metrics.map(m => `
+    <div class="health-metric">
+      <div class="health-metric-label">${m.label}</div>
+      <div class="health-metric-value ${m.class}">${m.display}</div>
+    </div>
+  `).join('');
+
+      // Update badge
+      const badge = document.getElementById('healthBadge');
+      const hasWarning = metrics.some(m => m.class === 'warn');
+      const hasError = metrics.some(m => m.class === 'bad');
+      if (hasError) {
+        badge.textContent = '⚠ Issues';
+        badge.style.background = 'rgba(244,91,91,0.12)';
+        badge.style.color = 'var(--accent-red)';
+        badge.style.borderColor = 'rgba(244,91,91,0.2)';
+      } else if (hasWarning) {
+        badge.textContent = '⚡ Warnings';
+        badge.style.background = 'rgba(245,166,35,0.12)';
+        badge.style.color = 'var(--accent-amber)';
+        badge.style.borderColor = 'rgba(245,166,35,0.2)';
+      }
+    }
+
+    function renderCosts() {
+      const summary = document.getElementById('costSummary');
+      const c = MOCK.costs;
+      const total24h = c.analyst + c.writer + c.technician + c.artDirector + c.failover;
+
+      summary.innerHTML = `
+    <div class="cost-row">
+      <span class="cost-label">Analyst (Sonnet)</span>
+      <span class="cost-value">$${c.analyst.toFixed(2)}</span>
+    </div>
+    <div class="cost-row">
+      <span class="cost-label">Writer (Sonnet)</span>
+      <span class="cost-value">$${c.writer.toFixed(2)}</span>
+    </div>
+    <div class="cost-row">
+      <span class="cost-label">Technician (Flash)</span>
+      <span class="cost-value">$${c.technician.toFixed(2)}</span>
+    </div>
+    <div class="cost-row">
+      <span class="cost-label">Art Director (Image)</span>
+      <span class="cost-value">$${c.artDirector.toFixed(2)}</span>
+    </div>
+    <div class="cost-row" style="border-top: 1px solid rgba(255,165,0,0.15); margin-top: 4px; padding-top: 12px;">
+      <span class="cost-label" style="font-weight: 600;">Today Total</span>
+      <span class="cost-value total">$${total24h.toFixed(2)}</span>
+    </div>
+    <div class="cost-row">
+      <span class="cost-label">Cost per Post</span>
+      <span class="cost-value">$${c.costPerPost.toFixed(2)}</span>
+    </div>
+    <div class="cost-row">
+      <span class="cost-label">Projected Monthly</span>
+      <span class="cost-value" style="color: ${c.projectedMonthly > c.monthlyBudget ? 'var(--accent-red)' : 'var(--accent-green)'};">$${c.projectedMonthly.toFixed(2)}</span>
+    </div>
+  `;
+
+      const budgetBar = document.getElementById('budgetBar');
+      const pct = Math.min((c.monthlySpent / c.monthlyBudget) * 100, 100);
+      budgetBar.innerHTML = `
+    <div class="budget-label-row">
+      <span>$${c.monthlySpent.toFixed(2)} spent</span>
+      <span>$${c.monthlyBudget.toFixed(2)} budget</span>
+    </div>
+    <div class="budget-bar">
+      <div class="budget-bar-fill" style="width: ${pct}%;"></div>
+    </div>
+  `;
+    }
+
+    function renderMovers() {
+      const container = document.getElementById('moversContent');
+      container.innerHTML = MOCK.movers.map(m => `
+    <div class="feed-item">
+      <div class="feed-icon ${m.direction === 'up' ? 'publish' : 'error'}" style="font-size: 16px;">
+        ${m.direction === 'up' ? '↗' : '↘'}
+      </div>
+      <div class="feed-content" style="display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <div class="feed-text">${m.query}</div>
+          <div class="feed-time">Position: ${m.position.toFixed(1)}</div>
+        </div>
+        <div style="font-size: 14px; font-weight: 700; font-family: var(--font-mono); color: ${m.direction === 'up' ? 'var(--accent-green)' : 'var(--accent-red)'};">
+          ${m.delta > 0 ? '+' : ''}${m.delta.toFixed(1)}
+        </div>
+      </div>
+    </div>
+  `).join('');
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+    function init() {
+      renderTimestamp();
+      renderKPIs();
+      renderTokenBurn();
+      renderGSCChart();
+      renderActivityFeed();
+      renderWPTable();
+      renderHealth();
+      renderCosts();
+      renderMovers();
+
+      // Live clock
+      setInterval(renderTimestamp, 1000);
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+
+</body>
+
+</html>

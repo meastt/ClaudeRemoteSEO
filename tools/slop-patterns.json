@@ -1,0 +1,105 @@
+{
+  "thresholds": {
+    "block": 10,
+    "warn": 3,
+    "clean": 0
+  },
+  "categories": {
+    "boilerplate_sections": {
+      "weight": 10,
+      "description": "Pet care boilerplate injected into wildlife articles",
+      "patterns": [
+        "scratching post",
+        "scratching posts",
+        "essential care tips",
+        "quality nutrition",
+        "regular vet visits",
+        "veterinary checkups",
+        "litter box",
+        "litter boxes",
+        "vaccination schedule",
+        "grooming needs",
+        "grooming routine",
+        "indoor cat",
+        "dry kibble",
+        "cat treats",
+        "spay or neuter",
+        "microchipping your",
+        "flea and tick",
+        "dental care for your cat",
+        "hairball prevention",
+        "cat-proof your home"
+      ]
+    },
+    "structural_markers": {
+      "weight": 10,
+      "description": "Headings that introduce boilerplate sections",
+      "heading_patterns": [
+        "essential care",
+        "pet care",
+        "caring for your",
+        "nutrition guide",
+        "grooming guide",
+        "feeding guide",
+        "keeping your.*healthy",
+        "how to care for",
+        "daily care routine",
+        "tips for new.*owners"
+      ]
+    },
+    "engagement_bait": {
+      "weight": 3,
+      "description": "Clickbait and filler phrases",
+      "patterns": [
+        "let's dive in",
+        "let's explore",
+        "you won't believe",
+        "the ultimate guide",
+        "everything you need to know",
+        "and that's a wrap",
+        "without further ado",
+        "buckle up",
+        "stay tuned",
+        "read on to discover",
+        "in this comprehensive guide"
+      ]
+    },
+    "lifestyle_blogger": {
+      "weight": 2,
+      "description": "Casual lifestyle blogger tone inappropriate for scientific content",
+      "patterns": [
+        "majestic creatures",
+        "furry friend",
+        "furry friends",
+        "heartwarming",
+        "adorable",
+        "cute little",
+        "purrfect",
+        "pawsome",
+        "fur baby",
+        "fur babies",
+        "cuddly",
+        "snuggle",
+        "oh-so-cute"
+      ]
+    },
+    "anthropomorphism": {
+      "weight": 5,
+      "description": "Inaccurate anthropomorphic language (per SOUL.md §2.4)",
+      "patterns": [
+        "loves her baby",
+        "loves his baby",
+        "protects fiercely",
+        "proud parent",
+        "proud mother",
+        "proud father",
+        "happy family",
+        "plays with joy",
+        "feels sad",
+        "grieving mother",
+        "loyal companion",
+        "best friend"
+      ]
+    }
+  }
+}

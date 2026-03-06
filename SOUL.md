@@ -68,9 +68,34 @@ Writer must verify before every WP REST API dispatch:
 - [ ] E-E-A-T signals present
 - [ ] 21-Day Rule checked via MMR lookup (N/A for new posts)
 - [ ] Featured image URL embedded in post
+- [ ] **Link validation passed** — HTTP HEAD every outbound URL (internal + external). Any 4xx/5xx response = BLOCK publish until fixed. Replace dead links with verified alternatives.
+- [ ] **No link-rot sources** — prefer stable links (DOI, Wikipedia, government domains, institutional .edu). Avoid direct IUCN species pages (blocked by WAF); use IUCN search URLs instead.
 
 ---
 
 ## §6. Escalation
 
 If any task cannot be completed without violating this document, the agent must halt, log the conflict, dispatch a Slack alert with header `⚠️ SOUL Violation Prevented`, and await human review.
+
+---
+
+## §7. Mandatory QA Gate
+
+**No agent may POST or PUT content to WordPress without passing the QA Gate.**
+
+### Automated Enforcement
+The `before_tool_call` hook registered in `openclaw.json` (`hooks/qa-before-publish.js`) intercepts every `wordpress_rest` POST/PUT call and runs the slop detector on the payload content.
+
+### Thresholds
+- **Score ≥ 10 → BLOCK** — Tool call is prevented. Slack alert dispatched with header `🚫 QA Gate: Content Blocked`. Agent must strip flagged content and resubmit.
+- **Score ≥ 3 → WARN** — Tool call proceeds but `qa_warning: true` is injected into the tool call context. Writer must include `qa_gate_result` in the PublishReceipt.
+- **Score < 3 → CLEAN** — Tool call proceeds normally.
+
+### Pattern Library
+Detection patterns are defined in `tools/slop-patterns.json` (human-editable, no code changes required). Categories: `boilerplate_sections`, `structural_markers`, `engagement_bait`, `lifestyle_blogger`, `anthropomorphism`.
+
+### Manual Audits
+The same detection engine powers CLI tools for manual use:
+- `node tools/content-scanner.js` — Full-site audit
+- `node tools/batch-cleaner.js` — Batch cleanup (dry-run default)
+- `node tools/qa-gate.js --post-id=N` — Single-post validation

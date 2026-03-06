@@ -1,0 +1,11 @@
+{
+  "name": "tigertribe-tools",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "TigerTribe content QA and batch cleanup tools",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "node-fetch": "^3.3.2"
+  }
+}

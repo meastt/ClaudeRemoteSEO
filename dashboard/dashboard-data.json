@@ -1,0 +1,175 @@
+{
+  "kpis": [
+    {
+      "label": "Tokens Today",
+      "value": "18.4K",
+      "change": "+2%",
+      "direction": "up"
+    },
+    {
+      "label": "Monthly Spend",
+      "value": "$2.11",
+      "change": "-1%",
+      "direction": "down"
+    },
+    {
+      "label": "Posts Published",
+      "value": "10",
+      "change": "+0",
+      "direction": "up"
+    },
+    {
+      "label": "Impressions (30d)",
+      "value": "0",
+      "change": "--",
+      "direction": "up"
+    },
+    {
+      "label": "Avg Position",
+      "value": "0",
+      "change": "--",
+      "direction": "down"
+    }
+  ],
+  "tokenBurn": [
+    {
+      "agent": "Analyst",
+      "model": "claude-sonnet-4",
+      "dotClass": "analyst",
+      "inputTokens": 4200,
+      "outputTokens": 1100,
+      "cost": 0.28,
+      "barColor": "var(--accent-blue)",
+      "barPercent": 30
+    },
+    {
+      "agent": "Writer",
+      "model": "claude-sonnet-4",
+      "dotClass": "writer",
+      "inputTokens": 12100,
+      "outputTokens": 4300,
+      "cost": 1.15,
+      "barColor": "var(--accent-purple)",
+      "barPercent": 60
+    },
+    {
+      "agent": "Technician",
+      "model": "gemini-1.5-flash",
+      "dotClass": "technician",
+      "inputTokens": 2100,
+      "outputTokens": 800,
+      "cost": 0.01,
+      "barColor": "var(--accent-green)",
+      "barPercent": 10
+    }
+  ],
+  "gsc": null,
+  "movers": [],
+  "wpPublishes": [
+    {
+      "slug": "/jaguar-panthera-onca-complete-species-profile/",
+      "action": "updated",
+      "agent": "Writer",
+      "time": "3h ago",
+      "tokens": 3868
+    },
+    {
+      "slug": "/bengal-cat-vs-wild-bengal-tiger-complete-comparison-2025/",
+      "action": "updated",
+      "agent": "Writer",
+      "time": "125d ago",
+      "tokens": 4921
+    },
+    {
+      "slug": "/complete-wild-cat-spotting-guide-for-hikers-2025/",
+      "action": "updated",
+      "agent": "Writer",
+      "time": "125d ago",
+      "tokens": 5210
+    },
+    {
+      "slug": "/lynx-vs-bobcat-complete-field-identification-guide-2025/",
+      "action": "updated",
+      "agent": "Writer",
+      "time": "126d ago",
+      "tokens": 3788
+    },
+    {
+      "slug": "/snow-leopard-endangered-status-conservation-wins-2025/",
+      "action": "updated",
+      "agent": "Writer",
+      "time": "126d ago",
+      "tokens": 4480
+    },
+    {
+      "slug": "/serval-cats-as-pets-complete-legal-guide-2025/",
+      "action": "updated",
+      "agent": "Writer",
+      "time": "126d ago",
+      "tokens": 6498
+    },
+    {
+      "slug": "/best-big-cat-conservation-volunteering-destinations-2025/",
+      "action": "updated",
+      "agent": "Writer",
+      "time": "126d ago",
+      "tokens": 7143
+    },
+    {
+      "slug": "/lion-bite-force-psi/",
+      "action": "updated",
+      "agent": "Writer",
+      "time": "909d ago",
+      "tokens": 7435
+    },
+    {
+      "slug": "/siberian-tigers-everything-you-need-to-know/",
+      "action": "updated",
+      "agent": "Writer",
+      "time": "913d ago",
+      "tokens": 7249
+    },
+    {
+      "slug": "/do-lions-eat-humans-are-lions-dangerous/",
+      "action": "updated",
+      "agent": "Writer",
+      "time": "913d ago",
+      "tokens": 7491
+    }
+  ],
+  "health": {
+    "status": 200,
+    "ttfb": 1102,
+    "uptime": 99.8,
+    "lcp": 4.2,
+    "cls": 0.05,
+    "inp": 210
+  },
+  "costs": {
+    "analyst": 0.28,
+    "writer": 1.15,
+    "technician": 0.01,
+    "artDirector": 0,
+    "failover": 0,
+    "monthlyBudget": 25,
+    "monthlySpent": 2.11,
+    "costPerPost": 1.15,
+    "projectedMonthly": 14.5
+  },
+  "activity": [
+    {
+      "type": "heartbeat",
+      "icon": "💓",
+      "text": "HB-60-PING — site healthy, TTFB 1102ms",
+      "time": "12 min ago",
+      "agent": "Technician"
+    },
+    {
+      "type": "publish",
+      "icon": "✅",
+      "text": "Daily cron: checked WP for updates",
+      "time": "1h ago",
+      "agent": "Technician"
+    }
+  ]
+}

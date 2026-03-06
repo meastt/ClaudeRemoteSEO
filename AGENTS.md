@@ -40,9 +40,9 @@
 - **Tools:** `http_get`, `gsc_api_read`, `mmr_memory_read`, `mmr_memory_write`, `slack_dispatch`, `file_lock`, `file_unlock`
 - **WP access:** Read-only.
 
-### Art Director — dall-e-3
+### Art Director — gemini-3.1-flash-image (Nano Banana)
 - **Scope:** Featured image generation only.
-- **Tools:** `image_generate` (DALL-E 3 API only). No WP or memory access. Responds only — never initiates.
+- **Tools:** `image_generate` (Gemini Nano Banana API). No WP or memory access. Responds only — never initiates.
 
 ---
 
@@ -112,12 +112,24 @@ On failure: log, Slack alert, hold publish, retry after 30 minutes. Do not publi
 2. [WRITER]     ACK brief → re-confirm 21-Day Rule → author HTML article
                 → agentToAgent → Art Director (ImageBrief)
 
-3. [ART DIR.]   Generate image (natural, 1792x1024, hd) → return URL to Writer
+3. [ART DIR.]   Generate image (photorealistic, 16:9, via Gemini Nano Banana) → return URL to Writer
 
-4. [WRITER]     Embed image → SOUL.md §5 checklist → POST or PUT WP REST API
+4. [WRITER]     Embed image → **HTTP HEAD all outbound links** → SOUL.md §5 checklist → POST or PUT WP REST API
                 → write PublishReceipt to MMR
 
-5. [TECHNICIAN] 23:00 UTC — aggregate receipts + token spend + GSC deltas
+3.5 [WRITER]     Run QA Gate: `validateForPublish(html)` must return `approved: true`.
+                If BLOCK → strip flagged content, re-run gate. Include `qa_gate_result` in PublishReceipt.
+
+4. [WRITER]     Embed image → **HTTP HEAD all outbound links** → SOUL.md §5 checklist → POST or PUT WP REST API
+                → write PublishReceipt to MMR (must include `qa_gate_result: { score, verdict }`)
+
+5. [TECHNICIAN] Weekly: crawl all published post URLs, HTTP HEAD every outbound link.
+                Flag any 4xx/5xx → Slack alert with `⚠️ Link Rot Detected` header.
+
+5.5 [TECHNICIAN] Weekly: run `node tools/content-scanner.js` — full-site QA audit.
+                Include scan summary (BLOCK/WARN/CLEAN counts) in EOD briefing.
+
+6. [TECHNICIAN] 23:00 UTC daily — aggregate receipts + token spend + GSC deltas
                 → dispatch EOD briefing to Slack
 
 §6. Technician File Locking
