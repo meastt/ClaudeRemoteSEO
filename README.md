@@ -1,12 +1,20 @@
 # TigerTribe SEO — OpenClaw Agent Workspace
 
 > **Server**: `129.146.165.229` (Oracle Cloud, Ubuntu 24.04 ARM)
-> **Bot**: `@TigerTribe_SEO_bot` (Telegram)
-> **Model**: Claude Sonnet 4.6 (Anthropic)
+> **OpenClaw**: v2026.3.8
+> **Primary Model**: Claude Sonnet 4.6 (Anthropic)
+
+This is one of three workspaces in a multi-site SEO agency. Each site has its own OpenClaw agent, Telegram bot, and workspace directory.
+
+| Site | Workspace | Telegram Bot | Status |
+|---|---|---|---|
+| tigertribe.net | `/home/ubuntu/ClaudeRemoteSEO` | `@TigerTribe_SEO_bot` | Waiting (re-eval 2026-03-22) |
+| phototipsguy.com | `/home/ubuntu/PhotoTipsGuy` | `@PHOTO_TIPS_GUY_SEO_bot` | Active |
+| griddleking.com | `/home/ubuntu/GriddleKing` | `@TR_SEO_Agent_Bot` | Active |
 
 ---
 
-## ⚠️ EMERGENCY STOP
+## Emergency Stop
 
 ### From Telegram (fastest)
 | Command | Effect |
@@ -14,41 +22,21 @@
 | `/stop` | Halts current task. Agent stays online. |
 | `/reset` | Clears session. Agent forgets current context. |
 
-### From Terminal (full kill)
+### From Terminal
 ```bash
-# SSH into server
-ssh -i ClaudeRemoteSEO/.ssh-oracle.key ubuntu@129.146.165.229
+ssh -i .ssh-oracle.key ubuntu@129.146.165.229
 
 # Graceful stop
-sudo systemctl stop openclaw-gateway
+openclaw gateway stop
 
-# Kill + prevent auto-restart
-sudo systemctl stop openclaw-gateway && sudo systemctl disable openclaw-gateway
-
-# Nuclear — hard kill all processes
-sudo pkill -9 -f "openclaw"
-```
-
-### Bring it back online
-```bash
-ssh -i ClaudeRemoteSEO/.ssh-oracle.key ubuntu@129.146.165.229
-sudo systemctl enable openclaw-gateway && sudo systemctl start openclaw-gateway
-```
-
----
-
-## Server Management
-
-```bash
-# Check status
-sudo systemctl status openclaw-gateway
-
-# Tail live logs
-sudo journalctl -u openclaw-gateway -f
+# Hard kill
+pkill -9 -f "openclaw"
 
 # Restart
-sudo systemctl restart openclaw-gateway
+nohup openclaw gateway </dev/null >/tmp/oc-gw.log 2>&1 & disown
 ```
+
+> **Note:** Gateway is NOT managed by systemd. It runs as a user process.
 
 ---
 
@@ -56,63 +44,81 @@ sudo systemctl restart openclaw-gateway
 
 | Component | Version / Detail |
 |---|---|
-| OpenClaw | 2026.3.2 |
+| OpenClaw | v2026.3.8 |
 | Node.js | v22.22.0 |
 | Default Model | `claude-sonnet-4-6` (Anthropic) |
-| Technician | `gemini-1.5-flash` (Google AI) |
-| Art Director | `gemini-3.1-flash-image` (Nano Banana) |
-| Telegram Bot | `@TigerTribe_SEO_bot` |
+| Analyst | `gemini-3.1-pro-preview` (Google AI) |
+| Writer Draft | `gemini-3.1-flash-lite-preview` (Google AI) |
+| Writer Polish | `claude-sonnet-4-6` (Anthropic) |
+| Technician | `gemini-3.1-flash-lite-preview` (Google AI) |
+| QA Gate | `claude-haiku-4-5` (Anthropic) |
+| Art Director | `gemini-3.1-flash-image` (Google AI) |
 | Gateway Port | 18789 |
+| Tools Profile | `full` (deny: `apply_patch`) |
+
+---
+
+## Multi-Agent Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                 OPENCLAW GATEWAY                     │
+│            3 Telegram bots / 3 agents                │
+├──────────┬──────────────┬───────────────────────────┤
+│          │              │                           │
+│  TigerTribe  PhotoTipsGuy   GriddleKing             │
+│          │              │                           │
+│  ┌───────┴───────┐  (same council structure)       │
+│  │   ANALYST     │  KeywordBrief                   │
+│  │  (Gemini Pro) ├──────────► WRITER               │
+│  └───────┬───────┘          (Sonnet 4.6)           │
+│          │ gsc_data          │ ImageBrief           │
+│  ┌───────┴───────┐  ┌───────┴───────┐             │
+│  │  TECHNICIAN   │  │  ART DIRECTOR │             │
+│  │ (Flash Lite)  │  │ (Gemini Image)│             │
+│  └───────────────┘  └───────────────┘             │
+│          └──── WP REST API ─────────┘              │
+└─────────────────────────────────────────────────────┘
+```
+
+Each agent council follows the same workflow: Analyst produces KeywordBriefs, Writer drafts/polishes and commissions images from Art Director, Technician handles health checks and EOD briefings. See `AGENTS.md` for full protocol.
+
+---
+
+## Scheduled Jobs
+
+| Job | Agent | Schedule | Description |
+|---|---|---|---|
+| `HB-60-PING` | Technician | Hourly | Uptime watchdog (silent on clean) |
+| `HB-ANALYSIS-CYCLE` | Analyst | Monthly (1st, 02:00 UTC) | Phase-gated content analysis + slug gate |
+| `HB-EOD-SUMMARY` | Technician | Daily 23:00 UTC | Conditional briefing (silent if nothing happened) |
+
+---
 
 ## Key Files
 
 | File | Purpose |
 |---|---|
-| `.env` | API keys & credentials (⛔ gitignored) |
-| `openclaw.json` | Workspace config — agent roles, models, failover |
-| `auth-profiles.json` | Provider auth definitions |
-| `SOUL.md` | Core ethical & tonal guidelines (overrides everything) |
-| `AGENTS.md` | Multi-agent architecture & data schemas |
-| `HEARTBEAT.md` | Scheduled job definitions |
-| `docs/OFFICIAL_TIGER_TRIBE_SEO_ACTION_PLAN.md` | Full SEO remediation roadmap (in `docs/` to avoid auto-loading) |
+| `.env` | API keys & credentials (gitignored) |
+| `.ssh-oracle.key` | SSH key to Oracle server (gitignored) |
+| `openclaw.json` | Workspace config — agent roles, models, failover, tools |
+| `auth-profiles.json` | Provider auth definitions (uses `$secretRef`, no plaintext) |
+| `SOUL.md` | Core ethical & tonal guidelines (overrides all task instructions) |
+| `AGENTS.md` | Multi-agent architecture, data schemas, publication workflow |
+| `HEARTBEAT.md` | Scheduled job definitions & phase-state rules |
+| `hooks/qa-before-publish.js` | QA gate — intercepts WP POST/PUT, runs slop detection |
+| `tools/gsc-fetch.js` | Google Search Console data fetcher |
+| `tools/slop-patterns.json` | Slop detection pattern library (human-editable) |
+| `tools/content-scanner.js` | Full-site QA audit CLI |
+| `backups/published-post-registry.json` | Append-only slug registry for duplicate prevention |
 
 ---
 
-## 🗺️ Future Roadmap
+## Safeguards
 
-> **Status:** Not yet started — documenting intent for later implementation.
-
-### Multi-Site SEO Agency
-
-Scale from a single-site agent to a full **multi-site SEO agency** with a Project Manager layer:
-
-```
-                ┌──────────┐
-                │   Mike   │
-                └────┬─────┘
-                     │ reports to
-              ┌──────┴──────┐
-              │  PM Agent   │  ← manages all sites, prioritizes work,
-              │  (new role) │    sends daily rollups to Mike
-              └──────┬──────┘
-        ┌────────────┼────────────┐
-        ▼            ▼            ▼
-  ┌──────────┐ ┌──────────┐ ┌──────────┐
-  │ TigerTribe│ │  Site 2  │ │  Site 3  │
-  │  SEO Team │ │ SEO Team │ │ SEO Team │
-  └──────────┘ └──────────┘ └──────────┘
-   Analyst       Analyst       Analyst
-   Writer        Writer        Writer
-   Art Dir.      Art Dir.      Art Dir.
-   Technician    Technician    Technician
-```
-
-**Sites to onboard (TBD):**
-- tigertribe.net ✅ (active)
-- *(add future sites here)*
-
-**PM Agent responsibilities:**
-- Cross-site resource allocation & prioritization
-- Consolidated daily/weekly reporting to Mike via Telegram
-- Budget tracking across all sites (token spend, API costs)
-- Escalation handling — single point of contact
+- **21-Day Maturation Rule** — No post can be edited within 21 days of last update (`SOUL.md` &sect;4)
+- **QA Gate** — `before_tool_call` hook blocks WP publishes scoring &ge;10 on slop detector (`SOUL.md` &sect;7)
+- **Slug Gate** — Every KeywordBrief is checked against `published-post-registry.json` to prevent duplicates
+- **Failover Chain** — Primary providers fail over to OpenRouter on 429/5xx errors
+- **Link Validation** — Writer must HTTP HEAD all outbound links before publishing
+- **Phase State** — Agents respect waiting/active phases; analysis suspends during maturation windows
