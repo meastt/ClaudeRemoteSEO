@@ -7,10 +7,14 @@
     "niche": "scientific zoological research — predatory felids",
     "auth_profiles_file": "./auth-profiles.json"
   },
+  "tools": {
+    "profile": "full",
+    "deny": ["apply_patch"]
+  },
   "tiered_intelligence_routing": {
     "roles": {
       "Analyst": {
-        "model_id": "gemini-1.5-flash",
+        "model_id": "gemini-3.1-pro-preview",
         "provider_profile": "google_ai",
         "tier": "light",
         "default_params": {
@@ -18,7 +22,16 @@
           "temperature": 0.3
         }
       },
-      "Writer": {
+      "Writer_Draft": {
+        "model_id": "gemini-3.1-flash-lite-preview",
+        "provider_profile": "google_ai",
+        "tier": "draft",
+        "default_params": {
+          "max_tokens": 8192,
+          "temperature": 0.5
+        }
+      },
+      "Writer_Polish": {
         "model_id": "anthropic/claude-sonnet-4-6",
         "provider_profile": "anthropic",
         "tier": "heavy",
@@ -28,11 +41,20 @@
         }
       },
       "Technician": {
-        "model_id": "gemini-1.5-flash",
+        "model_id": "gemini-3.1-flash-lite-preview",
         "provider_profile": "google_ai",
         "tier": "light",
         "default_params": {
           "max_tokens": 2048,
+          "temperature": 0.1
+        }
+      },
+      "QAGate": {
+        "model_id": "claude-haiku-4-5-20251001",
+        "provider_profile": "anthropic",
+        "tier": "light",
+        "default_params": {
+          "max_tokens": 1024,
           "temperature": 0.1
         }
       },
@@ -67,33 +89,24 @@
           "provider_profile": "openrouter",
           "model_map": {
             "Analyst": "anthropic/claude-3.5-sonnet",
-            "Writer": "anthropic/claude-3.5-sonnet",
+            "Writer_Draft": "google/gemini-flash-2.5",
+            "Writer_Polish": "anthropic/claude-3.5-sonnet",
             "Technician": "google/gemini-flash-1.5"
           }
         }
       ],
       "max_failover_attempts": 2,
       "alert_on_failover": true,
-      "alert_channel": "slack"
+      "alert_channel": "telegram"
     }
   },
   "channel_adapters": {
-    "slack": {
-      "provider_profile": "slack",
+    "telegram": {
+      "provider_profile": "telegram",
       "enabled": true,
-      "events": {
-        "eod_briefing": {
-          "schedule": "cron(0 23 * * *)",
-          "template": "eod_briefing_v1"
-        },
-        "failover_alert": {
-          "trigger": "on_failover_activation",
-          "template": "failover_alert_v1"
-        },
-        "maturation_block": {
-          "trigger": "on_21day_rule_enforcement",
-          "template": "maturation_block_v1"
-        }
+      "bot_name": "TigerTribe_SEO_bot",
+      "multi_workspace": {
+        "enabled": false
       }
     },
     "wordpress_rest": {
@@ -125,6 +138,15 @@
       "last_updated_at",
       "primary_keyword",
       "secondary_keywords"
-    ]
+    ],
+    "query": {
+      "hybrid": {
+        "vectorWeight": 0.7,
+        "textWeight": 0.3,
+        "candidateMultiplier": 4,
+        "mmr": { "lambda": 0.7 },
+        "temporalDecay": { "halfLifeDays": 30 }
+      }
+    }
   }
 }

@@ -27,17 +27,17 @@
 
 ### Analyst — claude-3-5-sonnet-20241022
 - **Scope:** Keyword research, content gap identification, KeywordBrief production.
-- **Tools:** `mmr_memory_search`, `mmr_memory_write`, `wordpress_rest_read`, `gsc_api_read`, `agentToAgent`
+- **Tools:** `mmr_memory_search`, `mmr_memory_write`, `wordpress_rest_read`, `gsc_api_read`, `agentToAgent`, `file_read`
 - **WP access:** Read-only. Never issues POST or PUT directly.
 
 ### Writer — claude-3-5-sonnet-20241022
 - **Scope:** E-E-A-T compliant HTML authoring, image commissioning, WordPress publishing.
-- **Tools:** `mmr_memory_search`, `mmr_memory_write`, `wordpress_rest_read`, `wordpress_rest_write`, `agentToAgent`
+- **Tools:** `mmr_memory_search`, `mmr_memory_write`, `wordpress_rest_read`, `wordpress_rest_write`, `agentToAgent`, `file_write`
 - **WP access:** GET, POST, PUT. DELETE not permitted.
 
 ### Technician — gemini-1.5-flash
 - **Scope:** Health pings, GSC polling, speed/cache audits, EOD briefing assembly.
-- **Tools:** `http_get`, `gsc_api_read`, `mmr_memory_read`, `mmr_memory_write`, `slack_dispatch`, `file_lock`, `file_unlock`
+- **Tools:** `http_get`, `gsc_api_read`, `mmr_memory_read`, `mmr_memory_write`, `telegram_dispatch`, `file_lock`, `file_unlock`
 - **WP access:** Read-only.
 
 ### Art Director — gemini-3.1-flash-image (Nano Banana)
@@ -89,6 +89,7 @@ PublishReceipt (Writer → MMR memory)
   "published_at_utc": "ISO8601",
   "wp_rest_response_code": "integer",
   "featured_image_url": "string",
+  "registry_appended": "boolean",
   "token_spend": { "analyst_input": "integer", "analyst_output": "integer", "writer_input": "integer", "writer_output": "integer", "art_director_images": "integer" }
 }
 
@@ -103,7 +104,7 @@ Writer → Art Director:
 
 agentToAgent(to: "ArtDirector", message_type: "ImageBrief", payload: <ImageBrief>, timeout_ms: 60000)
 
-On failure: log, Slack alert, hold publish, retry after 30 minutes. Do not publish without a featured image.
+On failure: log, Telegram alert, hold publish, retry after 30 minutes. Do not publish without a featured image.
 
 §5. End-to-End Publication Workflow
 1. [ANALYST]    02:00 UTC — WP inventory + 21-Day check + GSC cross-reference
@@ -121,10 +122,12 @@ On failure: log, Slack alert, hold publish, retry after 30 minutes. Do not publi
                 If BLOCK → strip flagged content, re-run gate. Include `qa_gate_result` in PublishReceipt.
 
 4. [WRITER]     Embed image → **HTTP HEAD all outbound links** → SOUL.md §5 checklist → POST or PUT WP REST API
-                → write PublishReceipt to MMR (must include `qa_gate_result: { score, verdict }`)
+                → append to `backups/published-post-registry.json`: `{ post_id, slug, title, content_type, action, published_at_utc, analysis_run_id }` (only on WP 200/201)
+                → write PublishReceipt to MMR (`registry_appended: true`, must include `qa_gate_result: { score, verdict }`)
+                → if registry append fails: PublishReceipt with `registry_appended: false`, Telegram: `⚠️ Registry Append Failed: {slug} — manual seed required.`
 
 5. [TECHNICIAN] Weekly: crawl all published post URLs, HTTP HEAD every outbound link.
-                Flag any 4xx/5xx → Slack alert with `⚠️ Link Rot Detected` header.
+                Flag any 4xx/5xx → Telegram alert with `⚠️ Link Rot Detected` header.
 
 5.5 [TECHNICIAN] Weekly: run `node tools/content-scanner.js` — full-site QA audit.
                 Include scan summary (BLOCK/WARN/CLEAN counts) in EOD briefing.
@@ -148,6 +151,8 @@ SOUL.md violation detected	The violating task
 Failover chain exhausted	The failed API call
 WP DELETE attempted	The DELETE request
 Lock conflict unresolved	That cycle's audit
+Duplicate slug detected (new-post brief, <21 days)	KeywordBrief dispatch halted
+Registry append failed after successful publish	None (publish keeps, Telegram alert only)
 ENDOFFILE	
 cat > .env.example << 'ENDOFFILE'
 

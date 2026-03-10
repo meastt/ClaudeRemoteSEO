@@ -6,6 +6,7 @@
   "description": "TigerTribe content QA and batch cleanup tools",
   "dependencies": {
     "dotenv": "^16.4.7",
+    "googleapis": "^144",
     "node-fetch": "^3.3.2"
   }
 }

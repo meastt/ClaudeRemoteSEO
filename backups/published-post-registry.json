@@ -1,0 +1,7 @@
+{
+  "_schema": "published-post-registry",
+  "_version": "1.0",
+  "_workspace": "tigertribe-seo-agency",
+  "_note": "Append-only. Writer writes after every successful WP POST or PUT. Self-populates over time — live WP inventory check in HB-24-ANALYSIS step 1 is primary gate until registry is full.",
+  "posts": []
+}

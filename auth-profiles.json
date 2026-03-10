@@ -69,10 +69,16 @@
       "provider": "wordpress_rest",
       "auth_type": "application_password",
       "credentials": {
+        "username": {
+          "$secretRef": {
+            "source": "environment",
+            "var": "WP_TIGERTRIBE_NET_USERNAME"
+          }
+        },
         "app_password": {
           "$secretRef": {
             "source": "environment",
-            "var": "WP_APP_PASSWORD"
+            "var": "WP_TIGERTRIBE_NET_PASSWORD"
           }
         }
       },
@@ -105,21 +111,27 @@
         "backoff_strategy": "exponential"
       }
     },
-    "slack": {
-      "provider": "slack",
-      "auth_type": "webhook",
+    "telegram": {
+      "provider": "telegram",
+      "auth_type": "bot_token",
       "credentials": {
-        "webhook_url": {
+        "bot_token": {
           "$secretRef": {
             "source": "environment",
-            "var": "SLACK_WEBHOOK_URL"
+            "var": "WP_TIGERTRIBE_NET_TELEGRAM_BOT_TOKEN"
           }
         }
       },
-      "timeout_ms": 10000,
+      "allowed_chat_ids": {
+        "$secretRef": {
+          "source": "environment",
+          "var": "WP_TIGERTRIBE_NET_TELEGRAM_CHAT_ID"
+        }
+      },
+      "timeout_ms": 15000,
       "retry": {
-        "max_attempts": 2,
-        "backoff_strategy": "linear"
+        "max_attempts": 3,
+        "backoff_strategy": "exponential"
       }
     }
   }
