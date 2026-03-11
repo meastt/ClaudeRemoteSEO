@@ -23,8 +23,8 @@
 **Agent:** Technician (gemini-1.5-flash) | **Schedule:** `cron(0 * * * *)` | **Token cap:** 500 output tokens
 
 1. HTTP GET `https://tigertribe.net/` — record status code and TTFB.
-2. **TELEGRAM RULE:** Send alert ONLY if site returns non-200 OR TTFB > 5 seconds.
-3. **Silent on clean runs.** No message if site is healthy.
+2. **IF healthy (HTTP 200 AND TTFB ≤ 5s):** Reply with exactly `HEARTBEAT_OK` — nothing else. OpenClaw will suppress delivery.
+3. **IF unhealthy (non-200 OR TTFB > 5s):** Send Telegram alert with status code, TTFB, and timestamp. Do NOT include `HEARTBEAT_OK` in alert messages.
 
 GSC rank checks are NOT part of HB-60. Rankings are checked by HB-ANALYSIS-CYCLE.
 

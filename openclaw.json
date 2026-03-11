@@ -100,6 +100,14 @@
       "alert_channel": "telegram"
     }
   },
+  "channels": {
+    "defaults": {
+      "heartbeat": {
+        "showOk": false,
+        "showAlerts": true
+      }
+    }
+  },
   "channel_adapters": {
     "telegram": {
       "provider_profile": "telegram",
@@ -126,6 +134,25 @@
         "tools": ["wordpress_rest"],
         "methods": ["POST", "PUT"]
       }
+    },
+    "after_tool_call": {
+      "deploy_verify": {
+        "path": "./hooks/verify-after-deploy.js",
+        "tools": ["wordpress_rest"],
+        "methods": ["POST", "PUT"],
+        "_note": "Verifies front-end returns 200 after any Code Snippets API write. Auto-rollback on failure."
+      }
+    }
+  },
+  "skills": {
+    "extraDirs": ["./skills"]
+  },
+  "heartbeat_actions": {
+    "on_http_error": {
+      "trigger_codes": [500, 502, 503],
+      "action": "skill",
+      "skill": "incident-response",
+      "_note": "When HB-60 detects a 500+, invoke the incident-response skill instead of just alerting."
     }
   },
   "memory": {
