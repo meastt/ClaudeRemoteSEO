@@ -22,6 +22,11 @@
 ### JOB: `HB-60-PING` — Uptime Watchdog
 **Agent:** Technician (gemini-1.5-flash) | **Schedule:** `cron(0 * * * *)` | **Token cap:** 500 output tokens
 
+**(0) Phase gate — check first, every time:**
+- Load `phase_state` from memory.
+- If `phase == "waiting"` AND today < `reeval_after`: **exit silently** — log skip to heartbeat journal (`HB-60-PING skipped: waiting phase`), do not invoke model, do not send Telegram. Stop here.
+- Otherwise (phase is `"active"`, no state, or today >= `reeval_after`): proceed normally below.
+
 1. HTTP GET `https://tigertribe.net/` — record status code and TTFB.
 2. **IF healthy (HTTP 200 AND TTFB ≤ 5s):** Reply with exactly `HEARTBEAT_OK` — nothing else. OpenClaw will suppress delivery.
 3. **IF unhealthy (non-200 OR TTFB > 5s):** Send Telegram alert with status code, TTFB, and timestamp. Do NOT include `HEARTBEAT_OK` in alert messages.
