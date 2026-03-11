@@ -1,16 +1,10 @@
 # TigerTribe SEO — OpenClaw Agent Workspace
 
-> **Server**: `129.146.165.229` (Oracle Cloud, Ubuntu 24.04 ARM)
+> **Server**: Oracle Cloud (Ubuntu 24.04 ARM) — see `.env` for connection details
 > **OpenClaw**: v2026.3.8
 > **Primary Model**: Claude Sonnet 4.6 (Anthropic)
 
 This is one of three workspaces in a multi-site SEO agency. Each site has its own OpenClaw agent, Telegram bot, and workspace directory.
-
-| Site | Workspace | Telegram Bot | Status |
-|---|---|---|---|
-| tigertribe.net | `/home/ubuntu/ClaudeRemoteSEO` | `@TigerTribe_SEO_bot` | Waiting (re-eval 2026-03-22) |
-| phototipsguy.com | `/home/ubuntu/PhotoTipsGuy` | `@PHOTO_TIPS_GUY_SEO_bot` | Active |
-| griddleking.com | `/home/ubuntu/GriddleKing` | `@TR_SEO_Agent_Bot` | Active |
 
 ---
 
@@ -24,7 +18,8 @@ This is one of three workspaces in a multi-site SEO agency. Each site has its ow
 
 ### From Terminal
 ```bash
-ssh -i .ssh-oracle.key ubuntu@129.146.165.229
+# SSH to server (see .env for host)
+ssh -i .ssh-oracle.key ubuntu@$OC_SERVER_IP
 
 # Graceful stop
 openclaw gateway stop
@@ -53,7 +48,7 @@ nohup openclaw gateway </dev/null >/tmp/oc-gw.log 2>&1 & disown
 | Technician | `gemini-3.1-flash-lite-preview` (Google AI) |
 | QA Gate | `claude-haiku-4-5` (Anthropic) |
 | Art Director | `gemini-3.1-flash-image` (Google AI) |
-| Gateway Port | 18789 |
+| Gateway Port | See `.env` |
 | Tools Profile | `full` (deny: `apply_patch`) |
 
 ---
