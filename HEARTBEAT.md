@@ -12,8 +12,8 @@
 | `HB-EOD-SUMMARY` | Technician + Telegram | Daily 23:00 UTC | Cheap | Conditional EOD briefing — silent if nothing happened |
 
 **Current phase state** (stored in memory key `phase_state`):
-- `phase: "waiting"` | entered: 2026-03-09 | re-eval after: 2026-03-22
-- HB-24-ANALYSIS suspended during waiting phase
+- `phase: "waiting"` | entered: 2026-03-11 | re-eval after: 2026-04-02
+- HB-ANALYSIS-CYCLE suspended during waiting phase (exits at phase gate)
 
 ---
 
